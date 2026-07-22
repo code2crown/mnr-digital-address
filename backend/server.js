@@ -31,8 +31,8 @@ app.use(
 app.use(
   cors({
     origin: [
-      "https://lions-digital-address.vercel.app",
-      "https://lions-digital-address-jzzbc15lb-code-2-crowns-projects.vercel.app/",
+      "https://mnr-digital-address.vercel.app",
+      "https://mnr-digital-address-jzzbc15lb-code-2-crowns-projects.vercel.app/",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -54,7 +54,7 @@ app.use("/api/candidate", candidateRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/pdf", pdfRoutes);
 
-app.get("/", (req, res) => res.send("Lions Digital Address Backend Running"));
+app.get("/", (req, res) => res.send("MNR Digital Address Backend Running"));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
