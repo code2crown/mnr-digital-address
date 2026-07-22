@@ -346,7 +346,7 @@ export default function CandidateForm() {
                       Verification Partner
                     </p>
                     <h3 className="text-base font-semibold text-[#0B8A42] break-words">
-                      Lions Digital Verification Team
+                      MNR Solutions Private Limited
                     </h3>
                     <p className="text-xs text-gray-600">
                       Trusted Address Validation
