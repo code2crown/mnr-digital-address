@@ -10,7 +10,7 @@ export default function CreateInvite() {
 
   const emptyForm = {
     clientName: "",
-    organization: "Lions Verify",
+    organization: "MNR Solutions",
     candidateName: "",
     candidateEmail: "",
     candidateMobile: "",
@@ -204,7 +204,7 @@ export default function CreateInvite() {
               href={`https://wa.me/${
                 form.candidateMobile
               }?text=${encodeURIComponent(
-                `Hi *${form.candidateName}*\n\nI'm Digital Address Verification Executive from *LionsVerify Tech PVT. LTD.*, on behalf of *${form.clientName}*.\n\nI have shared a link with you for digital address verification. Please click on the link and complete the verification process. If you face any issues, you can contact us.\n\n*Digital Address Verification Link:*\n${generated.link}`
+                `Hi *${form.candidateName}*\n\nI'm Digital Address Verification Executive from *MNR Solutions Private Limited*, on behalf of *${form.clientName}*.\n\nI have shared a link with you for digital address verification. Please click on the link and complete the verification process. If you face any issues, you can contact us.\n\n*Digital Address Verification Link:*\n${generated.link}`
               )}`}
               target="_blank"
               rel="noopener noreferrer"
