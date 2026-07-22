@@ -712,7 +712,7 @@ export default function CandidateForm() {
                       setBlob: setIdBlob,
                     },
                     {
-                      label: "Landmark Photo",
+                      label: "ID Proof",
                       blob: landmarkBlob,
                       setBlob: setLandmarkBlob,
                     },
@@ -902,8 +902,7 @@ export default function CandidateForm() {
 
       {/* FOOTER */}
       <footer className="bg-white text-center py-4 text-sm text-gray-500 border-t mt-4">
-        © {new Date().getFullYear()} Lions Digital Address • All Rights Reserved
-        | Doveloped by Mr. Karunanidhi
+        © {new Date().getFullYear()} MNR Solutions Private Limited • All Rights Reserved
       </footer>
     </div>
   );
