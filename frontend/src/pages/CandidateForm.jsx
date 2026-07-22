@@ -273,19 +273,19 @@ export default function CandidateForm() {
           <div className="flex items-center gap-2 sm:gap-3">
             <img
               src="/logo.png"
-              alt="Lions Logo"
+              alt="MNR Logo"
               className="h-9 w-9 sm:h-12 sm:w-12 object-contain"
             />
 
             <div className="leading-tight">
               {/* Desktop Title */}
               <h1 className="hidden sm:block text-xl font-bold text-[#0B8A42]">
-                Lions Digital Address
+                MNR Digital Address
               </h1>
 
               {/* Mobile Title */}
               <h1 className="block sm:hidden text-lg font-bold text-[#0B8A42]">
-                LDA
+                MNR
               </h1>
 
               {/* Subtitle — Desktop only */}
@@ -297,7 +297,7 @@ export default function CandidateForm() {
 
           {/* RIGHT — SUPPORT CALL BUTTON */}
           <a
-            href="tel:+917835008889"
+            href="tel:+91#"
             className="
         flex items-center gap-2
         bg-[#D4A017] text-white
