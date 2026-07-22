@@ -27,8 +27,8 @@ export default function AdminLayout({ children }) {
           {/* Hide text when collapsed */}
           {!collapsed && (
             <div>
-              <h1 className="text-lg font-bold text-gray-900">MNR Solutions PVT LTD</h1>
-              <p className="text-xs text-gray-500">Your Trusted BGV Partner</p>
+              <h1 className="text-lg font-bold text-gray-900">MNR Solutions</h1>
+              <p className="text-xs text-gray-500">Private Limited</p>
             </div>
           )}
         </div>
