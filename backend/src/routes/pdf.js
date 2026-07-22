@@ -5,7 +5,7 @@ const Submission = require("../models/Submission");
 
 const router = express.Router();
 
-const CLIENT_URL = process.env.CLIENT_URL || "https://lions-digital-address.vercel.app";
+const CLIENT_URL = process.env.CLIENT_URL || "https://mnr-digital-address.vercel.app";
 const GEO_KEY = process.env.GEOAPIFY_API_KEY;
 
 
@@ -206,13 +206,13 @@ footer {
 
 <body>
 
-<div class="watermark">LIONS VERIFIED</div>
+<div class="watermark">MNR VERIFIED</div>
 
 <header>
   <div class="header-left">
     <img src="${CLIENT_URL}/logo.png" />
     <div>
-      <h1>LIONSVERIFY TECH PVT. LTD.</h1>
+      <h1>MNR Solutions Private Limited</h1>
     </div>
   </div>
 
@@ -317,7 +317,7 @@ footer {
     ${imageBlock(sub.photos?.houseEntrance, "House Entrance")}
     ${imageBlock(sub.photos?.selfieWithHouse, "Selfie with House")}
     ${imageBlock(sub.photos?.idPhoto, "ID Proof")}
-    ${imageBlock(sub.photos?.landmarkPhoto, "Nearby Landmark")}
+    ${imageBlock(sub.photos?.landmarkPhoto, "Address Proof")}
   </div>
 </div>
 
