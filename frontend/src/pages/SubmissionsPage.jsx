@@ -93,7 +93,6 @@ export default function SubmissionsPage() {
 
   // DELETE SINGLE SUBMISSION
   function deleteSubmission(id) { 
-    alert("Contact your IT);
     showConfirm(
       "Delete Submission",
       "Are you sure you want to delete this submission permanently?",
@@ -113,7 +112,6 @@ export default function SubmissionsPage() {
 
   // BULK DELETE
   function bulkDelete() {
-    alert("Contact your IT);
     if (selected.length === 0) {
       toast.error("No submissions selected");
       return;
@@ -159,12 +157,12 @@ export default function SubmissionsPage() {
         <h1 className="text-2xl font-semibold">Submissions</h1>
 
         {/* BULK DELETE BUTTON */}
-        <button
+        {/* <button
           onClick={bulkDelete}
           className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
         >
           Delete Selected ({selected.length})
-        </button>
+        </button> */}
       </div>
 
       {/* FILTERS */}
@@ -275,10 +273,10 @@ export default function SubmissionsPage() {
                     />
                   
                     {/* DELETE ICON */}
-                    <FaRegTrashAlt
+                    {/* <FaRegTrashAlt
                       className="cursor-pointer hover:scale-110 transition"
                       onClick={() => deleteSubmission(s._id)}
-                    />
+                    /> */}
                   </td>
                 </tr>
               ))
