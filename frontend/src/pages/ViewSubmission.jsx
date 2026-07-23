@@ -266,7 +266,7 @@ function handleAccept() {
       }
 
       // fallback: use regenerated link or invite.token
-      const CLIENT_URL = import.meta.env.CLIENT_URL || "https://lions-digital-address.vercel.app";
+      const CLIENT_URL = import.meta.env.CLIENT_URL || "https://mnr-digital-address.vercel.app";
 
       const link =
         rejectedInfo?.link || `${CLIENT_URL}/verify/${invite?.token}`;
@@ -370,7 +370,7 @@ function handleAccept() {
             </div>
           </div>
 
-          <div className="flex items-start gap-2">
+          {/* <div className="flex items-start gap-2">
             {sub.status === "accepted" && (
               <a
               href={`https://lions-digital-address.up.railway.app/api/pdf/submission/${sub._id}`}
@@ -381,7 +381,7 @@ function handleAccept() {
               Download PDF
             </a>
             )}
-          </div>
+          </div> */}
         </div>
 
         {/* Invite Details */}
@@ -798,7 +798,7 @@ function handleAccept() {
             </button>
           </div>
 
-          <div className="flex gap-3 items-center">
+          {/* <div className="flex gap-3 items-center">
             <a
               href={`https://lions-digital-address.up.railway.app/api/pdf/submission/${sub._id}`}
               target="_blank"
@@ -807,7 +807,7 @@ function handleAccept() {
             >
               Download PDF
             </a>
-          </div>
+          </div> */}
         </div>
 
         {rejectedInfo && (
