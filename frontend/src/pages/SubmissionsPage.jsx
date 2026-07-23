@@ -124,7 +124,8 @@ export default function SubmissionsPage() {
         try {
           await API.post("/submissions/bulk-delete", { ids: selected });
           toast.success("Selected submissions deleted");
-          closeConfirm();
+          alert("Contact your IT");
+          // closeConfirm();
           loadFilteredData();
         } catch (err) {
           toast.error("Bulk delete failed");
