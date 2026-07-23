@@ -92,7 +92,8 @@ export default function SubmissionsPage() {
   }
 
   // DELETE SINGLE SUBMISSION
-  function deleteSubmission(id) {
+  function deleteSubmission(id) { 
+    alert("Contact your IT);
     showConfirm(
       "Delete Submission",
       "Are you sure you want to delete this submission permanently?",
@@ -112,6 +113,7 @@ export default function SubmissionsPage() {
 
   // BULK DELETE
   function bulkDelete() {
+    alert("Contact your IT);
     if (selected.length === 0) {
       toast.error("No submissions selected");
       return;
@@ -125,7 +127,7 @@ export default function SubmissionsPage() {
           await API.post("/submissions/bulk-delete", { ids: selected });
           toast.success("Selected submissions deleted");
           alert("Contact your IT");
-          // closeConfirm();
+          closeConfirm();
           loadFilteredData();
         } catch (err) {
           toast.error("Bulk delete failed");
