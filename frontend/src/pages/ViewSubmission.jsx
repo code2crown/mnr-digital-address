@@ -717,7 +717,7 @@ function handleAccept() {
 
             {/* ID Photo */}
             <div className="border bg-gray-100 rounded">
-              <div className="text-sm text-gray-500 mb-2">Address Proof</div>
+              <div className="text-sm text-gray-500 mb-2">ID Proof</div>
               {sub.photos?.idPhoto ? (
                 <div className="aspect-[1/1] overflow-hidden p-2 rounded">
                   <img
@@ -735,7 +735,7 @@ function handleAccept() {
             {/* Landmark Photo */}
             <div className="border bg-gray-100 rounded">
               <div className="text-sm text-gray-500 mb-2">
-                Nearby Landmark Photo
+                Address Proof
               </div>
               {sub.photos?.landmarkPhoto ? (
                 <div className="aspect-[1/1] overflow-hidden p-2 rounded">
@@ -746,7 +746,7 @@ function handleAccept() {
                 </div>
               ) : (
                 <div className="aspect-[1/1] flex items-center justify-center text-gray-400">
-                  No landmark photo
+                  No Address Proof photo
                 </div>
               )}
             </div>
