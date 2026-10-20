@@ -52,6 +52,10 @@ export default function ViewSubmission() {
   const mapRef = useRef(null);
   const [mapReady, setMapReady] = useState(false);
 
+  const backendBase = import.meta.env.VITE_API_BASE
+    ? import.meta.env.VITE_API_BASE.replace("/api", "")
+    : "http://localhost:5000";
+
   useEffect(() => {
     loadSubmission();
     // eslint-disable-next-line
@@ -150,7 +154,7 @@ export default function ViewSubmission() {
                 submission.candidateMobile ||
                 null,
             }
-          : null
+          : null,
       );
     } catch (err) {
       console.error("loadSubmission error:", err);
@@ -159,8 +163,6 @@ export default function ViewSubmission() {
       setLoading(false);
     }
   }
-
-
 
   // --------------- Save candidate-filled address fields ----------------
   async function handleSaveCandidateFields() {
@@ -179,32 +181,30 @@ export default function ViewSubmission() {
   }
 
   // --------------- Accept submission ----------------
-function handleAccept() {
-  askConfirmation({
-    title: "Accept Submission",
-    message:
-      "Are you sure you want to mark this submission as ACCEPTED?",
-    onConfirm: async () => {
-      const toastId = toast.loading("Accepting submission...");
+  function handleAccept() {
+    askConfirmation({
+      title: "Accept Submission",
+      message: "Are you sure you want to mark this submission as ACCEPTED?",
+      onConfirm: async () => {
+        const toastId = toast.loading("Accepting submission...");
 
-      try {
-        await API.post(`/submissions/accept/${sub._id}`);
+        try {
+          await API.post(`/submissions/accept/${sub._id}`);
 
-        toast.dismiss(toastId);
-        toast.success("Submission accepted successfully");
+          toast.dismiss(toastId);
+          toast.success("Submission accepted successfully");
 
-        await loadSubmission();
-      } catch (err) {
-        console.error("Accept error:", err);
-        toast.dismiss(toastId);
-        toast.error("Accept failed");
-      } finally {
-        closeConfirm();
-      }
-    },
-  });
-}
-
+          await loadSubmission();
+        } catch (err) {
+          console.error("Accept error:", err);
+          toast.dismiss(toastId);
+          toast.error("Accept failed");
+        } finally {
+          closeConfirm();
+        }
+      },
+    });
+  }
 
   // --------------- Reject submission ----------------
 
@@ -253,13 +253,15 @@ function handleAccept() {
             `https://wa.me/${invite.candidateMobile}?text=${encodeURIComponent(
               "Verification required: " +
                 link +
-                (rejectedInfo?.reason ? `\nReason: ${rejectedInfo.reason}` : "")
+                (rejectedInfo?.reason
+                  ? `\nReason: ${rejectedInfo.reason}`
+                  : ""),
             )}`,
-            "_blank"
+            "_blank",
           );
         } else {
           alert(
-            "Resend requested on server. If nothing opened, fallback will be used."
+            "Resend requested on server. If nothing opened, fallback will be used.",
           );
           // fallback to constructed link below
         }
@@ -279,9 +281,11 @@ function handleAccept() {
           `https://wa.me/${mobile}?text=${encodeURIComponent(
             "Please complete your verification:\n" +
               link +
-              (rejectedInfo?.reason ? `\n\nReason: ${rejectedInfo.reason}` : "")
+              (rejectedInfo?.reason
+                ? `\n\nReason: ${rejectedInfo.reason}`
+                : ""),
           )}`,
-          "_blank"
+          "_blank",
         );
       }
     } catch (err) {
@@ -361,8 +365,8 @@ function handleAccept() {
                   sub.status === "accepted"
                     ? "bg-green-100 text-green-800"
                     : sub.status === "rejected"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-yellow-100 text-yellow-800"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-yellow-100 text-yellow-800"
                 }`}
               >
                 {sub.status ? sub.status.toUpperCase() : "PENDING"}
@@ -373,13 +377,13 @@ function handleAccept() {
           <div className="flex items-start gap-2">
             {sub.status === "accepted" && (
               <a
-              href={`http://localhost:5000/api/pdf/submission/${sub._id}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded"
-            >
-              Download PDF
-            </a>
+                href={`${backendBase}/api/pdf/submission/${sub._id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow text-sm font-semibold"
+              >
+                <FaDownload /> Download PDF
+              </a>
             )}
           </div>
         </div>
@@ -736,9 +740,7 @@ function handleAccept() {
 
             {/* Landmark Photo */}
             <div className="border bg-gray-100 rounded">
-              <div className="text-sm text-gray-500 mb-2">
-                Address Proof
-              </div>
+              <div className="text-sm text-gray-500 mb-2">Address Proof</div>
               {sub.photos?.landmarkPhoto ? (
                 <div className="aspect-[1/1] overflow-hidden p-2 rounded">
                   <img
@@ -844,7 +846,7 @@ function handleAccept() {
                   href={`https://wa.me/${
                     rejectedInfo.mobile
                   }?text=${encodeURIComponent(
-                    `Your verification was rejected.\n\n*Reason:* ${rejectedInfo.reason}\n\nPlease re-submit your details using this link:\n${rejectedInfo.link}`
+                    `Your verification was rejected.\n\n*Reason:* ${rejectedInfo.reason}\n\nPlease re-submit your details using this link:\n${rejectedInfo.link}`,
                   )}`}
                   target="_blank"
                   rel="noreferrer"
