@@ -57,4 +57,10 @@ app.use("/api/billing", billingRoutes);
 
 app.get("/", (req, res) => res.send("Code 2 Crown Multi-Client SaaS Backend Running"));
 
+app.get('/ping', (req, res) => {
+  res.status(200).send('Service is active!');
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
