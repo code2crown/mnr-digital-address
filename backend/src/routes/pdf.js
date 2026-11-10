@@ -1,27 +1,79 @@
 const express = require("express");
-const puppeteer = require("puppeteer");
 const axios = require("axios");
 const Submission = require("../models/Submission");
 const router = express.Router();
 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
+// Helper: Convert any image/map URL to Base64 buffer
 async function fetchImageAsBase64(url) {
   if (!url) return null;
   if (url.startsWith("data:image")) return url;
   try {
     const response = await axios.get(url, {
       responseType: "arraybuffer",
-      timeout: 12000,
+      timeout: 15000,
       headers: { "User-Agent": "Mozilla/5.0" },
     });
     const contentType = response.headers["content-type"] || "";
-    // Ensure response is actually an image and not an error page
     if (!contentType.startsWith("image/")) return null;
     return `data:${contentType};base64,${Buffer.from(response.data, "binary").toString("base64")}`;
   } catch {
     return null;
   }
+}
+
+// Universal Browser Launcher (Works on Windows PC & Render Linux Container)
+async function launchBrowser() {
+  if (process.env.RENDER || process.platform === "linux") {
+    const chromium = require("@sparticuz/chromium");
+    const puppeteerCore = require("puppeteer-core");
+
+    return await puppeteerCore.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
+  } else {
+    const puppeteer = require("puppeteer");
+    return await puppeteer.launch({
+      headless: "new",
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+      ],
+    });
+  }
+}
+
+// Generate Detailed Mobile-Style Map as Base64 (Never breaks in PDF)
+async function getMapImageBase64(lat, lng) {
+  if (!lat || !lng) return null;
+
+  const googleKey = process.env.GOOGLE_MAPS_API_KEY;
+
+  // 1. Agar valid Google API Key hai toh Google Maps Detailed View
+  if (googleKey && googleKey.trim() !== "" && !googleKey.includes("your_")) {
+    const googleUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=17&size=800x360&scale=2&maptype=roadmap&markers=color:red%7Clabel:C%7C${lat},${lng}&key=${googleKey}`;
+    const gB64 = await fetchImageAsBase64(googleUrl);
+    if (gB64) return gB64;
+  }
+
+  // 2. High-Res Mobile Detailed Street Map (Free, shows exact streets, shops & buildings)
+  const yandexDetailedUrl = `https://static-maps.yandex.ru/1.x/?lang=en_US&ll=${lng},${lat}&z=17&l=map&size=650,300&pt=${lng},${lat},pm2rdm`;
+  const yB64 = await fetchImageAsBase64(yandexDetailedUrl);
+  if (yB64) return yB64;
+
+  // 3. Fallback Geoapify / OSM Bright
+  if (process.env.GEOAPIFY_API_KEY) {
+    const geoUrl = `https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=800&height=360&zoom=17&center=lonlat:${lng},${lat}&marker=lonlat:${lng},${lat};color:%23d50000;size:large&apiKey=${process.env.GEOAPIFY_API_KEY}`;
+    return await fetchImageAsBase64(geoUrl);
+  }
+
+  return null;
 }
 
 router.get("/submission/:id", async (req, res) => {
@@ -38,17 +90,11 @@ router.get("/submission/:id", async (req, res) => {
 
     const lat = Number(submission.location?.lat);
     const lng = Number(submission.location?.lng);
-    const googleKey = process.env.GOOGLE_MAPS_API_KEY;
 
-    // Try Google Static Map ONLY if key is valid and returns a real image
-    let validGoogleMapBase64 = null;
-    if (lat && lng && googleKey && googleKey.trim() !== "" && !googleKey.includes("your_")) {
-      const gUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=17&size=800x360&scale=2&maptype=roadmap&markers=color:red%7Clabel:C%7C${lat},${lng}&key=${googleKey}`;
-      validGoogleMapBase64 = await fetchImageAsBase64(gUrl);
-    }
-
-    const [logoSrc, houseSrc, selfieSrc, idSrc, landmarkSrc, sigSrc] = await Promise.all([
+    // Pre-fetch all assets simultaneously as Base64
+    const [logoSrc, mapSrc, houseSrc, selfieSrc, idSrc, landmarkSrc, sigSrc] = await Promise.all([
       fetchImageAsBase64(client.companyLogo || `${CLIENT_URL}/logo.png`),
+      getMapImageBase64(lat, lng),
       fetchImageAsBase64(submission.photos?.houseEntrance),
       fetchImageAsBase64(submission.photos?.selfieWithHouse),
       fetchImageAsBase64(submission.photos?.idPhoto),
@@ -56,35 +102,20 @@ router.get("/submission/:id", async (req, res) => {
       fetchImageAsBase64(submission.signatureUrl),
     ]);
 
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--no-first-run",
-        "--no-zygote",
-        "--single-process",
-        "--disable-gpu"
-      ],
-    });
-
+    browser = await launchBrowser();
     const page = await browser.newPage();
+
     const html = generateHTML(submission, {
       logoSrc,
-      validGoogleMapBase64,
-      houseSrc: houseSrc || submission.photos?.houseEntrance,
-      selfieSrc: selfieSrc || submission.photos?.selfieWithHouse,
-      idSrc: idSrc || submission.photos?.idPhoto,
-      landmarkSrc: landmarkSrc || submission.photos?.landmarkPhoto,
-      sigSrc: sigSrc || submission.signatureUrl,
+      mapSrc,
+      houseSrc,
+      selfieSrc,
+      idSrc,
+      landmarkSrc,
+      sigSrc,
     });
 
-    await page.setContent(html, { waitUntil: "networkidle0", timeout: 30000 });
-
-    // Wait 1.8s so Leaflet map tiles render completely
-    await new Promise((r) => setTimeout(r, 1800));
+    await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 30000 });
 
     const pdf = await page.pdf({
       format: "A4",
@@ -99,7 +130,7 @@ router.get("/submission/:id", async (req, res) => {
 
     await browser.close();
 
-    // Filename: ClientName_CandidateName.pdf
+    // ClientName_CandidateName.pdf
     const rawClient = client.companyShortName || client.companyName || inv.clientName || "Client";
     const rawCandidate = inv.candidateName || "Candidate";
     const safeClient = rawClient.replace(/[^a-zA-Z0-9]/g, "_").replace(/_+/g, "_");
@@ -126,27 +157,6 @@ function generateHTML(sub, images) {
   const companyName = client.companyName || inv.clientName || "MNR Solutions Private Limited";
   const shortName = client.companyShortName || companyName.split(" ")[0] || "MNR";
 
-  const lat = Number(sub.location?.lat);
-  const lng = Number(sub.location?.lng);
-  const accuracy = Number(sub.location?.accuracy) || 30;
-
-  // Map Rendering: If validGoogleMapBase64 succeeded, show it; otherwise render live detailed phone-style map
-  const mapHTML = !lat || !lng
-    ? `<p style="color:#999">Map snapshot not available</p>`
-    : images.validGoogleMapBase64
-    ? `<img id="map-image" src="${images.validGoogleMapBase64}" style="width:100%; height:220px; object-fit:cover; border:1px solid #aaa; border-radius:6px; margin-top:8px;" />`
-    : `
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-      <div id="pdf-map" style="width:100%; height:220px; border:1px solid #aaa; border-radius:6px; margin-top:8px;"></div>
-      <script>
-        var map = L.map('pdf-map', { zoomControl: false, attributionControl: false }).setView([${lat}, ${lng}], 17);
-        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20 }).addTo(map);
-        L.circle([${lat}, ${lng}], { radius: ${Math.max(accuracy, 25)}, color: '#1a73e8', fillColor: '#1a73e8', fillOpacity: 0.15, weight: 2 }).addTo(map);
-        L.circleMarker([${lat}, ${lng}], { radius: 8, color: '#fff', weight: 2, fillColor: '#d50000', fillOpacity: 1 }).addTo(map);
-      </script>
-    `;
-
   return `
 <!DOCTYPE html>
 <html>
@@ -157,6 +167,8 @@ body {
   font-family: Arial, sans-serif;
   font-size: 12px;
   color: #000;
+  margin: 0;
+  padding: 0;
 }
 
 header {
@@ -223,7 +235,7 @@ td {
   page-break-before: always;
 }
 
-/* ORIGINAL 3-COLUMN 1:1 PHOTO GRID */
+/* ORIGINAL 1:1 SQUARE PHOTOS */
 .photos {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -323,7 +335,12 @@ footer {
     <tr><td class="label">Accuracy</td><td>${sub.location?.accuracy ? sub.location.accuracy + " m" : "-"}</td></tr>
     <tr><td class="label">Resolved Address</td><td>${sub.resolvedAddress || "-"}</td></tr>
   </table>
-  ${mapHTML}
+
+  ${
+    images.mapSrc
+      ? `<img id="map-image" src="${images.mapSrc}" style="width:100%; height:220px; object-fit: cover; border:1px solid #aaa; border-radius:6px; margin-top:10px;" />`
+      : `<p style="color:#999; margin-top:8px;">Map snapshot not available</p>`
+  }
 </div>
 
 <div class="page-break"></div>
